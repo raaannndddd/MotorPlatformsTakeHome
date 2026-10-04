@@ -1,0 +1,9 @@
+plugins {
+    // Downloads a Java 21 toolchain if the machine does not have one.
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.10.0'
+}
+
+rootProject.name = 'motorplatforms-inspections'
+
+// The frontend is an npm project; backend/build.gradle builds it and packages the result.
+include 'backend'

@@ -1,0 +1,115 @@
+plugins {
+    id 'java'
+    id 'jacoco'
+    id 'org.springframework.boot' version '3.5.6'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'com.diffplug.spotless' version '7.2.1'
+    id 'com.github.node-gradle.node' version '7.1.0'
+}
+
+group = 'com.motorplatforms'
+version = '0.1.0'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.flywaydb:flyway-core'
+    implementation 'org.flywaydb:flyway-database-postgresql'
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
+    implementation 'com.googlecode.libphonenumber:libphonenumber:8.13.52'
+    // Required by Spring Security's Argon2PasswordEncoder.
+    implementation 'org.bouncycastle:bcprov-jdk18on:1.80'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
+    runtimeOnly 'org.postgresql:postgresql'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation 'org.awaitility:awaitility'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+    finalizedBy 'jacocoTestReport'
+}
+
+// Coverage report: backend/build/reports/jacoco/test/html/index.html
+tasks.named('jacocoTestReport') {
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
+// The views are React + TypeScript in /frontend. Gradle downloads its own Node, so only a JDK is
+// needed. The built pages are served by Spring Boot from the classpath's static/ folder.
+node {
+    download = true
+    version = '22.23.3'
+    npmInstallCommand = 'ci'
+    nodeProjectDir = rootProject.file('frontend')
+}
+
+def buildFrontend = tasks.register('buildFrontend', com.github.gradle.node.npm.task.NpmTask) {
+    description = 'Type-checks and bundles the frontend.'
+    dependsOn tasks.named('npmInstall')
+    args = ['run', 'build']
+    inputs.dir(rootProject.file('frontend/src'))
+    inputs.files(rootProject.fileTree('frontend') { include '*.html', '*.json', '*.ts' })
+    outputs.dir(rootProject.file('frontend/dist'))
+}
+
+tasks.named('processResources') {
+    from(buildFrontend) {
+        into 'static'
+    }
+}
+
+// Run from the repo root, where .env and the local storage folder live.
+tasks.named('bootRun') {
+    workingDir = rootProject.projectDir
+}
+
+// Creates the first admin from SEED_ADMIN_EMAIL / SEED_ADMIN_PASSWORD, then exits.
+tasks.register('seedAdmin', JavaExec) {
+    group = 'application'
+    description = 'Creates the first admin user.'
+    classpath = sourceSets.main.runtimeClasspath
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(21) }
+    mainClass = 'com.motorplatforms.Application'
+    args '--spring.profiles.active=seed'
+    workingDir = rootProject.projectDir
+}
+
+spotless {
+    java {
+        googleJavaFormat()
+        removeUnusedImports()
+    }
+}
+
+// The frontend is formatted by Prettier (pinned in frontend/package.json), run through the same
+// commands: spotlessCheck checks both, spotlessApply fixes both.
+def checkFrontendFormat = tasks.register('checkFrontendFormat', com.github.gradle.node.npm.task.NpmTask) {
+    dependsOn tasks.named('npmInstall')
+    args = ['run', 'format:check']
+}
+def formatFrontend = tasks.register('formatFrontend', com.github.gradle.node.npm.task.NpmTask) {
+    dependsOn tasks.named('npmInstall')
+    args = ['run', 'format']
+}
+tasks.named('spotlessCheck') { dependsOn checkFrontendFormat }
+tasks.named('spotlessApply') { dependsOn formatFrontend }

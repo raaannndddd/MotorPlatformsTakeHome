@@ -1,0 +1,39 @@
+# All secrets come from the environment (or a gitignored .env in development).
+spring:
+  config:
+    import: optional:file:.env[.properties]
+  datasource:
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+  servlet:
+    multipart:
+      enabled: false
+
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    whitelabel:
+      enabled: false
+
+app:
+  public-base-url: ${PUBLIC_BASE_URL}
+  jwt-secret: ${JWT_SECRET}
+  pii-encryption-key: ${PII_ENCRYPTION_KEY}
+  cookie-secure: ${COOKIE_SECURE:true}
+  storage:
+    dir: ${STORAGE_DIR:storage}
+    signing-secret: ${STORAGE_SIGNING_SECRET}
+  max-media-bytes: 629145600 # 600MB
+  link-ttl: 7d
+  otp-ttl: 5m
+  otp-max-attempts: 5
+  admin-session-ttl: 1h
+  customer-session-ttl: 30m
+  public-rate-limit-per-minute: 60

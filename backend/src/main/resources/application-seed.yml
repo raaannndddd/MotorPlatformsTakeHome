@@ -1,0 +1,8 @@
+# `./gradlew seedAdmin`: start without a web server, create the admin, exit.
+spring:
+  main:
+    web-application-type: none
+
+seed:
+  admin-email: ${SEED_ADMIN_EMAIL}
+  admin-password: ${SEED_ADMIN_PASSWORD}

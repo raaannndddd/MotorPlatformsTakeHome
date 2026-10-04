@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MotorPlatforms dashboard</title>
+    <link rel="stylesheet" href="/app.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Inspections</h1>
+      <div><span id="me" class="muted"></span> <button id="logout" class="secondary">Log out</button></div>
+    </header>
+
+    <p id="awaiting"></p>
+    <table>
+      <thead>
+        <tr><th>Client</th><th>Car</th><th>Rego</th><th>Status</th><th>Sent</th><th>Submitted</th></tr>
+      </thead>
+      <tbody id="inspections"></tbody>
+    </table>
+    <p class="muted">Refreshes every 10 seconds. Submitted inspections are highlighted; click one to respond.</p>
+
+    <section id="detail" class="panel" hidden>
+      <h2 id="detail-title"></h2>
+      <p><strong>Mileage:</strong> <span id="detail-mileage"></span></p>
+      <p><strong>Condition notes:</strong> <span id="detail-notes"></span></p>
+      <div id="detail-media" class="media"></div>
+      <form id="respond">
+        <label style="width: 100%">Response <textarea name="response" maxlength="1000" required></textarea></label>
+        <button>Send response</button>
+      </form>
+      <p id="detail-response"></p>
+      <p id="detail-message"></p>
+    </section>
+
+    <h2>Clients</h2>
+    <form id="new-client">
+      <label>Name <input name="name" required maxlength="200" /></label>
+      <label>Car model <input name="carModel" required maxlength="100" /></label>
+      <label>Phone <input name="phone" required maxlength="30" placeholder="0412 345 678" /></label>
+      <label>Rego <input name="rego" required maxlength="20" /></label>
+      <button>Add client</button>
+    </form>
+    <p id="client-message"></p>
+    <table>
+      <thead><tr><th>Name</th><th>Car</th><th>Rego</th><th>Phone</th><th></th></tr></thead>
+      <tbody id="clients"></tbody>
+    </table>
+
+    <section id="users-section" hidden>
+      <h2>Users (admin)</h2>
+      <form id="new-user">
+        <label>Email <input name="email" type="email" required /></label>
+        <label>Password <input name="password" type="password" minlength="12" required /></label>
+        <label>Role <select name="role"><option>STAFF</option><option>ADMIN</option></select></label>
+        <button>Create user</button>
+      </form>
+      <p id="user-message"></p>
+      <table>
+        <thead><tr><th>Email</th><th>Role</th><th>Created</th></tr></thead>
+        <tbody id="users"></tbody>
+      </table>
+    </section>
+
+    <script type="module" src="/dashboard.js"></script>
+  </body>
+</html>

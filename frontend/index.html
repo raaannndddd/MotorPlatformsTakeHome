@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MotorPlatforms staff login</title>
+    <link rel="stylesheet" href="/app.css" />
+  </head>
+  <body>
+    <h1>MotorPlatforms staff portal</h1>
+    <form id="login">
+      <label>Email <input name="email" type="email" autocomplete="username" required /></label>
+      <label>
+        Password <input name="password" type="password" autocomplete="current-password" required />
+      </label>
+      <button>Log in</button>
+    </form>
+    <p id="message"></p>
+    <script type="module">
+      import { api, describe, formValues, show } from '/api.js';
+
+      document.getElementById('login').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        try {
+          await api('/api/auth/login', { method: 'POST', body: formValues(event.target) });
+          location.href = '/dashboard.html';
+        } catch (error) {
+          show(document.getElementById('message'), describe(error), true);
+        }
+      });
+    </script>
+  </body>
+</html>

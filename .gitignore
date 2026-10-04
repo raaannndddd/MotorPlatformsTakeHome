@@ -1,0 +1,13 @@
+.gradle
+build
+/storage
+.idea
+*.iml
+.vscode
+.DS_Store
+.env
+.env.*
+!.env.example
+node_modules
+/frontend/dist
+/backend/bin

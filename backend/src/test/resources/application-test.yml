@@ -1,0 +1,25 @@
+# Tests run against a real Postgres (docker compose). These values are test-only, not secrets.
+spring:
+  datasource:
+    url: ${TEST_DATABASE_URL:jdbc:postgresql://localhost:55432/motor_test}
+    username: motor
+    password: motor
+  jpa:
+    properties:
+      hibernate:
+        generate_statistics: true
+
+logging:
+  level:
+    org.hibernate.engine.internal.StatisticalLoggingSessionEventListener: WARN
+
+app:
+  public-base-url: http://localhost
+  jwt-secret: test-jwt-secret-that-is-at-least-32-characters
+  pii-encryption-key: AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=
+  storage:
+    dir: build/test-storage
+    signing-secret: test-storage-secret-that-is-at-least-32-chars
+
+# High enough that the suite never trips it; RateLimitFilterTest covers the limit.
+  public-rate-limit-per-minute: 100000
