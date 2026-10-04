@@ -1,5 +1,6 @@
-package com.motorplatforms.clients;
+package com.motorplatforms.repository;
 
+import com.motorplatforms.model.Client;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;

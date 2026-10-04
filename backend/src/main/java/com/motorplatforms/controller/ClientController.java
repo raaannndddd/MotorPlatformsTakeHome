@@ -1,54 +1,49 @@
-package com.motorplatforms.clients;
+package com.motorplatforms.controller;
 
-import jakarta.validation.Valid;
-import java.util.List;
-import java.util.UUID;
+import com.motorplatforms.model.ClientRequest;
+import com.motorplatforms.model.ClientResponse;
+import com.motorplatforms.service.ClientService;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.function.ServerRequest;
+import org.springframework.web.servlet.function.ServerResponse;
 
-/** PII is decrypted server-side for authenticated staff and admins only. */
-@RestController
-@RequestMapping("/api/clients")
+/** PII is decrypted server-side for authenticated admins only. */
+@Component
 class ClientController {
 
   private final ClientService clientService;
+  private final Requests requests;
 
-  ClientController(ClientService clientService) {
+  ClientController(ClientService clientService, Requests requests) {
     this.clientService = clientService;
+    this.requests = requests;
   }
 
-  @GetMapping
-  List<ClientResponse> list() {
-    return clientService.list().stream().map(ClientResponse::from).toList();
+  ServerResponse list(ServerRequest request) {
+    return ServerResponse.ok()
+        .body(clientService.list().stream().map(ClientResponse::from).toList());
   }
 
-  @GetMapping("/{id}")
-  ClientResponse get(@PathVariable UUID id) {
-    return ClientResponse.from(clientService.get(id));
+  ServerResponse get(ServerRequest request) {
+    return ServerResponse.ok()
+        .body(ClientResponse.from(clientService.get(requests.pathId(request, "id"))));
   }
 
-  @PostMapping
-  @ResponseStatus(HttpStatus.CREATED)
-  ClientResponse create(@Valid @RequestBody ClientRequest body) {
-    return ClientResponse.from(clientService.create(body));
+  ServerResponse create(ServerRequest request) throws Exception {
+    ClientRequest body = requests.body(request, ClientRequest.class);
+    return ServerResponse.status(HttpStatus.CREATED)
+        .body(ClientResponse.from(clientService.create(body)));
   }
 
-  @PutMapping("/{id}")
-  ClientResponse update(@PathVariable UUID id, @Valid @RequestBody ClientRequest body) {
-    return ClientResponse.from(clientService.update(id, body));
+  ServerResponse update(ServerRequest request) throws Exception {
+    var id = requests.pathId(request, "id");
+    ClientRequest body = requests.body(request, ClientRequest.class);
+    return ServerResponse.ok().body(ClientResponse.from(clientService.update(id, body)));
   }
 
-  @DeleteMapping("/{id}")
-  @ResponseStatus(HttpStatus.NO_CONTENT)
-  void delete(@PathVariable UUID id) {
-    clientService.delete(id);
+  ServerResponse delete(ServerRequest request) {
+    clientService.delete(requests.pathId(request, "id"));
+    return ServerResponse.noContent().build();
   }
 }

@@ -1,4 +1,4 @@
-package com.motorplatforms.clients;
+package com.motorplatforms.model;
 
 import com.motorplatforms.infra.crypto.EncryptedString;
 import jakarta.persistence.Column;
