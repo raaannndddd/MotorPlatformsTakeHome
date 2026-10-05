@@ -1,5 +1,7 @@
-package com.motorplatforms.inspections;
+package com.motorplatforms.repository;
 
+import com.motorplatforms.model.Inspection;
+import com.motorplatforms.model.InspectionStatus;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;

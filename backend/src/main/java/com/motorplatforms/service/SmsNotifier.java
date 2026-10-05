@@ -1,4 +1,4 @@
-package com.motorplatforms.notifications;
+package com.motorplatforms.service;
 
 import com.motorplatforms.infra.queue.Job;
 import com.motorplatforms.infra.queue.JobQueue;

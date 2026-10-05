@@ -1,19 +1,19 @@
-package com.motorplatforms.inspections;
+package com.motorplatforms.service;
 
-import com.motorplatforms.clients.Client;
-import com.motorplatforms.clients.ClientService;
 import com.motorplatforms.common.ApiException;
 import com.motorplatforms.common.AppProperties;
 import com.motorplatforms.infra.crypto.Secrets;
-import com.motorplatforms.notifications.SmsMessages;
-import com.motorplatforms.notifications.SmsNotifier;
+import com.motorplatforms.model.Client;
+import com.motorplatforms.model.Inspection;
+import com.motorplatforms.model.InspectionStatus;
+import com.motorplatforms.repository.InspectionRepository;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Staff-side inspection workflow. */
+/** Admin-side inspection workflow. */
 @Service
 public class InspectionService {
 
