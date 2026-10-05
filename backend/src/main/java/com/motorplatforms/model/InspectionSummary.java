@@ -1,9 +1,9 @@
-package com.motorplatforms.inspections;
+package com.motorplatforms.model;
 
 import java.time.Instant;
 import java.util.UUID;
 
-/** One row on the staff dashboard. */
+/** One row on the admin dashboard. */
 public record InspectionSummary(
     UUID id,
     InspectionStatus status,
@@ -16,7 +16,7 @@ public record InspectionSummary(
     Instant submittedAt,
     Instant respondedAt) {
 
-  static InspectionSummary from(Inspection i) {
+  public static InspectionSummary from(Inspection i) {
     var c = i.getClient();
     return new InspectionSummary(
         i.getId(),

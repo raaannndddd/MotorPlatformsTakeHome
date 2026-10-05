@@ -1,4 +1,4 @@
-package com.motorplatforms.notifications;
+package com.motorplatforms.service;
 
 /** Every SMS the system sends. */
 public final class SmsMessages {

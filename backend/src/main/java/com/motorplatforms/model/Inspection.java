@@ -1,6 +1,6 @@
-package com.motorplatforms.inspections;
+package com.motorplatforms.model;
 
-import com.motorplatforms.clients.Client;
+import com.motorplatforms.repository.InspectionRepository;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
