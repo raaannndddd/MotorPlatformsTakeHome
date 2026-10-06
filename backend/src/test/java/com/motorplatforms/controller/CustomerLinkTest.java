@@ -1,9 +1,8 @@
-package com.motorplatforms.inspections;
+package com.motorplatforms.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.forwardedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -12,6 +11,7 @@ import com.motorplatforms.infra.crypto.Secrets;
 import java.time.Instant;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
 
 /** Link token checks and "opened" tracking. */
 class CustomerLinkTest extends InspectionTestSupport {
@@ -35,7 +35,7 @@ class CustomerLinkTest extends InspectionTestSupport {
 
     mvc.perform(get("/i/" + token))
         .andExpect(status().isOk())
-        .andExpect(forwardedUrl("/inspection.html"))
+        .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
         .andExpect(header().string("Referrer-Policy", "no-referrer"));
 
     assertThat(statusInDb()).isEqualTo("SENT");
@@ -66,11 +66,11 @@ class CustomerLinkTest extends InspectionTestSupport {
   @Test
   void customerEndpointsNeedTheCustomerSession() throws Exception {
     mvc.perform(get("/api/public/inspection")).andExpect(status().isUnauthorized());
-    mvc.perform(get("/api/public/inspection").cookie(staff)).andExpect(status().isForbidden());
+    mvc.perform(get("/api/public/inspection").cookie(admin)).andExpect(status().isForbidden());
   }
 
   @Test
-  void aCustomerSessionCannotReachStaffEndpoints() throws Exception {
+  void aCustomerSessionCannotReachAdminEndpoints() throws Exception {
     var customer = customerSession(sendLink());
 
     mvc.perform(get("/api/clients").cookie(customer)).andExpect(status().isForbidden());

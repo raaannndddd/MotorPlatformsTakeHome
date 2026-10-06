@@ -1,38 +1,37 @@
-package com.motorplatforms.users;
+package com.motorplatforms.controller;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.motorplatforms.IntegrationTest;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
-class UserAuthorisationTest extends IntegrationTest {
+class UserAuthorisationTest extends InspectionTestSupport {
 
   private static final Map<String, String> NEW_USER =
-      Map.of("email", "new@example.com", "password", "another-long-password", "role", "STAFF");
+      Map.of("email", "new@example.com", "password", "another-long-password");
 
   @Test
-  void staffCannotCreateUsers() throws Exception {
-    var staff = loginAs(Role.STAFF);
+  void aCustomerSessionCannotCreateOrListUsers() throws Exception {
+    var customer = customerSession(sendLink());
 
-    mvc.perform(jsonPost("/api/users", NEW_USER).cookie(staff))
+    mvc.perform(jsonPost("/api/users", NEW_USER).cookie(customer))
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.error.code").value("FORBIDDEN"));
+    mvc.perform(get("/api/users").cookie(customer)).andExpect(status().isForbidden());
   }
 
   @Test
-  void staffCannotListUsers() throws Exception {
-    var staff = loginAs(Role.STAFF);
-
-    mvc.perform(get("/api/users").cookie(staff)).andExpect(status().isForbidden());
+  void anonymousRequestsAreRejected() throws Exception {
+    mvc.perform(jsonPost("/api/users", NEW_USER)).andExpect(status().isUnauthorized());
+    mvc.perform(get("/api/users"))
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.error.code").value("UNAUTHENTICATED"));
   }
 
   @Test
   void adminCanCreateAndListUsers() throws Exception {
-    var admin = loginAs(Role.ADMIN);
-
     mvc.perform(jsonPost("/api/users", NEW_USER).cookie(admin))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.email").value("new@example.com"))
@@ -43,21 +42,20 @@ class UserAuthorisationTest extends IntegrationTest {
   }
 
   @Test
-  void adminCanCreateAnotherAdmin() throws Exception {
-    var admin = loginAs(Role.ADMIN);
+  void aCreatedUserIsAnAdmin() throws Exception {
+    mvc.perform(jsonPost("/api/users", NEW_USER).cookie(admin)).andExpect(status().isCreated());
+    var created =
+        mvc.perform(jsonPost("/api/auth/login", NEW_USER))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getCookies()[0];
 
-    mvc.perform(
-            jsonPost(
-                    "/api/users",
-                    Map.of("email", "b@example.com", "password", PASSWORD, "role", "ADMIN"))
-                .cookie(admin))
-        .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.role").value("ADMIN"));
+    mvc.perform(get("/api/users").cookie(created)).andExpect(status().isOk());
   }
 
   @Test
   void duplicateEmailIsAConflict() throws Exception {
-    var admin = loginAs(Role.ADMIN);
     mvc.perform(jsonPost("/api/users", NEW_USER).cookie(admin)).andExpect(status().isCreated());
 
     mvc.perform(jsonPost("/api/users", NEW_USER).cookie(admin))
@@ -67,11 +65,7 @@ class UserAuthorisationTest extends IntegrationTest {
 
   @Test
   void invalidInputReturnsFieldErrors() throws Exception {
-    var admin = loginAs(Role.ADMIN);
-
-    mvc.perform(
-            jsonPost("/api/users", Map.of("email", "nope", "password", "short", "role", "STAFF"))
-                .cookie(admin))
+    mvc.perform(jsonPost("/api/users", Map.of("email", "nope", "password", "short")).cookie(admin))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error.code").value("VALIDATION_ERROR"))
         .andExpect(jsonPath("$.error.fields.email").exists())
@@ -79,18 +73,10 @@ class UserAuthorisationTest extends IntegrationTest {
   }
 
   @Test
-  void anonymousRequestsAreRejected() throws Exception {
-    mvc.perform(get("/api/users"))
-        .andExpect(status().isUnauthorized())
-        .andExpect(jsonPath("$.error.code").value("UNAUTHENTICATED"));
-  }
-
-  @Test
   void wrongPasswordIsRejected() throws Exception {
-    userService.create("x@example.com", PASSWORD, Role.STAFF);
-
     mvc.perform(
-            jsonPost("/api/auth/login", Map.of("email", "x@example.com", "password", "wrong-one")))
+            jsonPost(
+                "/api/auth/login", Map.of("email", "admin@example.com", "password", "wrong-one")))
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.error.code").value("INVALID_CREDENTIALS"));
   }

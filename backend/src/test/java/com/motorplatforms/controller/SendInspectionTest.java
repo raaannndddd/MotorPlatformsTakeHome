@@ -1,4 +1,4 @@
-package com.motorplatforms.inspections;
+package com.motorplatforms.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -6,7 +6,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.motorplatforms.IntegrationTest;
 import com.motorplatforms.infra.crypto.Secrets;
-import com.motorplatforms.users.Role;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -15,10 +14,10 @@ class SendInspectionTest extends IntegrationTest {
 
   @Test
   void textsTheClientALinkAndStoresOnlyTheTokenHash() throws Exception {
-    var staff = loginAs(Role.STAFF);
-    String clientId = createClient(staff);
+    var admin = loginAsAdmin();
+    String clientId = createClient(admin);
 
-    mvc.perform(jsonPost("/api/inspections", Map.of("clientId", clientId)).cookie(staff))
+    mvc.perform(jsonPost("/api/inspections", Map.of("clientId", clientId)).cookie(admin))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.status").value("SENT"))
         .andExpect(jsonPath("$.clientName").value("Jane Citizen"));
@@ -37,11 +36,11 @@ class SendInspectionTest extends IntegrationTest {
 
   @Test
   void rejectsAnUnknownClient() throws Exception {
-    var staff = loginAs(Role.STAFF);
+    var admin = loginAsAdmin();
 
     mvc.perform(
             jsonPost("/api/inspections", Map.of("clientId", UUID.randomUUID().toString()))
-                .cookie(staff))
+                .cookie(admin))
         .andExpect(status().isNotFound());
     assertThat(sms.sent()).isEmpty();
   }

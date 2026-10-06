@@ -1,10 +1,9 @@
-package com.motorplatforms.inspections;
+package com.motorplatforms.controller;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.motorplatforms.IntegrationTest;
-import com.motorplatforms.auth.SessionCookies;
-import com.motorplatforms.users.Role;
+import com.motorplatforms.security.SessionCookies;
 import jakarta.servlet.http.Cookie;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,19 +11,19 @@ import org.junit.jupiter.api.BeforeEach;
 /** Drives the inspection flow through the API, the way the two UIs do. */
 public abstract class InspectionTestSupport extends IntegrationTest {
 
-  protected Cookie staff;
+  protected Cookie admin;
   protected String clientId;
 
   @BeforeEach
-  void staffAndClient() throws Exception {
-    staff = loginAs(Role.STAFF);
-    clientId = createClient(staff);
+  void adminAndClient() throws Exception {
+    admin = loginAsAdmin();
+    clientId = createClient(admin);
   }
 
-  /** Staff sends a link; returns the token from the SMS the client received. */
+  /** Admin sends a link; returns the token from the SMS the client received. */
   protected String sendLink() throws Exception {
     int before = sms.sent().size();
-    mvc.perform(jsonPost("/api/inspections", Map.of("clientId", clientId)).cookie(staff))
+    mvc.perform(jsonPost("/api/inspections", Map.of("clientId", clientId)).cookie(admin))
         .andExpect(status().isCreated());
     String body = sms.awaitCount(before + 1).body();
     return body.substring(body.lastIndexOf('/') + 1);

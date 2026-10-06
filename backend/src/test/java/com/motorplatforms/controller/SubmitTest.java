@@ -1,10 +1,12 @@
-package com.motorplatforms.inspections;
+package com.motorplatforms.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.motorplatforms.common.ApiException;
+import com.motorplatforms.model.SubmissionRequest;
+import com.motorplatforms.service.CustomerInspectionService;
 import jakarta.servlet.http.Cookie;
 import java.util.ArrayList;
 import java.util.Map;
