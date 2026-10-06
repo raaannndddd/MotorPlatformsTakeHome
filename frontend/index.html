@@ -3,31 +3,16 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>MotorPlatforms staff login</title>
-    <link rel="stylesheet" href="/app.css" />
+    <title>MotorPlatforms admin login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap"
+    />
   </head>
   <body>
-    <h1>MotorPlatforms staff portal</h1>
-    <form id="login">
-      <label>Email <input name="email" type="email" autocomplete="username" required /></label>
-      <label>
-        Password <input name="password" type="password" autocomplete="current-password" required />
-      </label>
-      <button>Log in</button>
-    </form>
-    <p id="message"></p>
-    <script type="module">
-      import { api, describe, formValues, show } from '/api.js';
-
-      document.getElementById('login').addEventListener('submit', async (event) => {
-        event.preventDefault();
-        try {
-          await api('/api/auth/login', { method: 'POST', body: formValues(event.target) });
-          location.href = '/dashboard.html';
-        } catch (error) {
-          show(document.getElementById('message'), describe(error), true);
-        }
-      });
-    </script>
+    <div id="root"></div>
+    <script type="module" src="/src/login.tsx"></script>
   </body>
 </html>
