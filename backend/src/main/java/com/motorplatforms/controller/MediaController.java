@@ -1,63 +1,62 @@
-package com.motorplatforms.media;
+package com.motorplatforms.controller;
 
-import com.motorplatforms.auth.CustomerPrincipal;
 import com.motorplatforms.common.ApiException;
-import com.motorplatforms.inspections.InspectionRepository;
-import jakarta.validation.Valid;
+import com.motorplatforms.model.CustomerPrincipal;
+import com.motorplatforms.repository.InspectionRepository;
+import com.motorplatforms.service.MediaService;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
-import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.function.ServerRequest;
+import org.springframework.web.servlet.function.ServerResponse;
 
-@RestController
+@Component
 class MediaController {
 
   record UploadRequest(@NotBlank String contentType, @Positive long sizeBytes) {}
 
   private final MediaService mediaService;
   private final InspectionRepository inspections;
+  private final Requests requests;
 
-  MediaController(MediaService mediaService, InspectionRepository inspections) {
+  MediaController(MediaService mediaService, InspectionRepository inspections, Requests requests) {
     this.mediaService = mediaService;
     this.inspections = inspections;
+    this.requests = requests;
   }
 
   // Customer (session cookie scoped to one inspection).
 
-  @GetMapping("/api/public/media")
-  List<MediaView> list(@AuthenticationPrincipal CustomerPrincipal customer) {
-    return mediaService.confirmedFor(customer.inspectionId());
+  ServerResponse list(ServerRequest request) {
+    return ServerResponse.ok().body(mediaService.confirmedFor(customerInspectionId()));
   }
 
-  @PostMapping("/api/public/media")
-  @ResponseStatus(HttpStatus.CREATED)
-  MediaService.UploadTicket requestUpload(
-      @AuthenticationPrincipal CustomerPrincipal customer, @Valid @RequestBody UploadRequest body) {
-    return mediaService.requestUpload(
-        customer.inspectionId(), body.contentType(), body.sizeBytes());
+  ServerResponse requestUpload(ServerRequest request) throws Exception {
+    UploadRequest body = requests.body(request, UploadRequest.class);
+    return ServerResponse.status(HttpStatus.CREATED)
+        .body(
+            mediaService.requestUpload(
+                customerInspectionId(), body.contentType(), body.sizeBytes()));
   }
 
-  @PostMapping("/api/public/media/{mediaId}/confirm")
-  MediaView confirm(
-      @AuthenticationPrincipal CustomerPrincipal customer, @PathVariable UUID mediaId) {
-    return mediaService.confirm(customer.inspectionId(), mediaId);
+  ServerResponse confirm(ServerRequest request) {
+    return ServerResponse.ok()
+        .body(mediaService.confirm(customerInspectionId(), requests.pathId(request, "mediaId")));
   }
 
-  // Staff.
+  // Admin.
 
-  @GetMapping("/api/inspections/{inspectionId}/media")
-  List<MediaView> forStaff(@PathVariable UUID inspectionId) {
+  ServerResponse forAdmin(ServerRequest request) {
+    UUID inspectionId = requests.pathId(request, "inspectionId");
     if (!inspections.existsById(inspectionId)) {
       throw ApiException.notFound("Inspection");
     }
-    return mediaService.confirmedFor(inspectionId);
+    return ServerResponse.ok().body(mediaService.confirmedFor(inspectionId));
+  }
+
+  private UUID customerInspectionId() {
+    return requests.principal(CustomerPrincipal.class).inspectionId();
   }
 }

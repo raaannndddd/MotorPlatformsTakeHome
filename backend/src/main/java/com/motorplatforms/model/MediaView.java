@@ -1,4 +1,4 @@
-package com.motorplatforms.media;
+package com.motorplatforms.model;
 
 import java.util.UUID;
 

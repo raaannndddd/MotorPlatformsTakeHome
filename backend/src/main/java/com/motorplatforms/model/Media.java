@@ -1,4 +1,4 @@
-package com.motorplatforms.media;
+package com.motorplatforms.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -40,7 +40,7 @@ public class Media {
 
   protected Media() {}
 
-  Media(UUID inspectionId, String objectKey, String contentType, long declaredBytes) {
+  public Media(UUID inspectionId, String objectKey, String contentType, long declaredBytes) {
     this.inspectionId = inspectionId;
     this.objectKey = objectKey;
     this.contentType = contentType;
@@ -48,7 +48,7 @@ public class Media {
   }
 
   /** Records that the upload finished, with the size actually stored. */
-  void confirm(long storedBytes) {
+  public void confirm(long storedBytes) {
     this.sizeBytes = storedBytes;
     this.confirmedAt = Instant.now();
   }

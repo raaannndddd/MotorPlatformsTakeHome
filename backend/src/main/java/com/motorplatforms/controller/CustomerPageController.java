@@ -1,17 +1,22 @@
-package com.motorplatforms.inspections;
+package com.motorplatforms.controller;
 
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.function.ServerRequest;
+import org.springframework.web.servlet.function.ServerResponse;
 
 /**
  * Serves the customer page for an SMS link. Deliberately does nothing else: SMS apps fetch links to
  * build previews, so "opened" is recorded only when the page's script calls the session API.
  */
-@Controller
+@Component
 class CustomerPageController {
 
-  @GetMapping("/i/{token}")
-  String page() {
-    return "forward:/inspection.html";
+  private static final Resource PAGE = new ClassPathResource("static/inspection.html");
+
+  ServerResponse page(ServerRequest request) {
+    return ServerResponse.ok().contentType(MediaType.TEXT_HTML).body(PAGE);
   }
 }
