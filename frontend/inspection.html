@@ -4,41 +4,15 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>MotorPlatforms car inspection</title>
-    <link rel="stylesheet" href="/app.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap"
+    />
   </head>
   <body>
-    <h1>Car inspection</h1>
-    <p id="message"></p>
-
-    <section id="otp-step" hidden>
-      <p>To protect your details, we'll text a 6-digit code to the phone number we have on file.</p>
-      <button id="send-code">Text me a code</button>
-      <form id="verify" hidden>
-        <label>Code <input name="code" inputmode="numeric" pattern="\d{6}" maxlength="6" autocomplete="one-time-code" required /></label>
-        <button>Continue</button>
-      </form>
-    </section>
-
-    <section id="form-step" hidden>
-      <form id="submission">
-        <label>Odometer reading (km) <input name="mileage" type="number" min="0" max="2000000" required /></label>
-        <label style="width: 100%">
-          Condition notes
-          <textarea name="conditionNotes" maxlength="5000" required placeholder="Dents, scratches, warning lights, anything we should know"></textarea>
-        </label>
-        <label>
-          Photos and video (JPEG, PNG, HEIC, MP4)
-          <input id="files" type="file" multiple accept="image/jpeg,image/png,image/heic,video/mp4" />
-        </label>
-        <ul id="uploads"></ul>
-        <button id="submit-button">Submit inspection</button>
-      </form>
-    </section>
-
-    <section id="done-step" hidden>
-      <p class="ok">Thanks! Your inspection has been sent. We'll text you when we've reviewed it.</p>
-    </section>
-
-    <script type="module" src="/inspection.js"></script>
+    <div id="root"></div>
+    <script type="module" src="/src/inspection.tsx"></script>
   </body>
 </html>
