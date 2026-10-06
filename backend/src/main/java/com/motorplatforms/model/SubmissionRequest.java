@@ -1,4 +1,4 @@
-package com.motorplatforms.inspections;
+package com.motorplatforms.model;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;

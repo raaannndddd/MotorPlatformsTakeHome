@@ -1,10 +1,12 @@
-package com.motorplatforms.inspections;
+package com.motorplatforms.service;
 
 import com.motorplatforms.common.ApiException;
 import com.motorplatforms.common.AppProperties;
 import com.motorplatforms.infra.crypto.Secrets;
-import com.motorplatforms.notifications.SmsMessages;
-import com.motorplatforms.notifications.SmsNotifier;
+import com.motorplatforms.model.Inspection;
+import com.motorplatforms.model.InspectionStatus;
+import com.motorplatforms.model.SubmissionRequest;
+import com.motorplatforms.repository.InspectionRepository;
 import java.time.Instant;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;

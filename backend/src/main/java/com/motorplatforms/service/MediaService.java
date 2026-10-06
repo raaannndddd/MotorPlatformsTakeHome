@@ -1,10 +1,13 @@
-package com.motorplatforms.media;
+package com.motorplatforms.service;
 
 import com.motorplatforms.common.ApiException;
 import com.motorplatforms.common.AppProperties;
 import com.motorplatforms.infra.storage.ObjectStorage;
-import com.motorplatforms.inspections.CustomerInspectionService;
-import com.motorplatforms.inspections.InspectionStatus;
+import com.motorplatforms.model.InspectionStatus;
+import com.motorplatforms.model.Media;
+import com.motorplatforms.model.MediaView;
+import com.motorplatforms.model.UploadTicket;
+import com.motorplatforms.repository.MediaRepository;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -17,8 +20,6 @@ public class MediaService {
 
   static final Set<String> ALLOWED_TYPES =
       Set.of("image/jpeg", "image/png", "image/heic", "video/mp4");
-
-  public record UploadTicket(UUID mediaId, String uploadUrl, String method, String contentType) {}
 
   private final MediaRepository media;
   private final ObjectStorage storage;

@@ -1,32 +1,26 @@
-package com.motorplatforms.inspections;
+package com.motorplatforms.controller;
 
-import com.motorplatforms.auth.CustomerPrincipal;
-import com.motorplatforms.auth.JwtService;
-import com.motorplatforms.auth.SessionCookies;
 import com.motorplatforms.common.AppProperties;
-import jakarta.validation.Valid;
+import com.motorplatforms.model.CustomerPrincipal;
+import com.motorplatforms.model.InspectionStatus;
+import com.motorplatforms.model.SubmissionRequest;
+import com.motorplatforms.security.JwtService;
+import com.motorplatforms.security.SessionCookies;
+import com.motorplatforms.service.CustomerInspectionService;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.util.Map;
 import java.util.UUID;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.function.ServerRequest;
+import org.springframework.web.servlet.function.ServerResponse;
 
 /**
  * Public, customer-facing endpoints. session/otp/verify take the link token; everything else
  * requires the customer session cookie issued by a successful OTP check.
  */
-@RestController
-@RequestMapping("/api/public")
+@Component
 class CustomerInspectionController {
 
   record TokenRequest(@NotBlank @Size(max = 100) String token) {}
@@ -41,32 +35,35 @@ class CustomerInspectionController {
   private final JwtService jwt;
   private final SessionCookies cookies;
   private final AppProperties props;
+  private final Requests requests;
 
   CustomerInspectionController(
       CustomerInspectionService service,
       JwtService jwt,
       SessionCookies cookies,
-      AppProperties props) {
+      AppProperties props,
+      Requests requests) {
     this.service = service;
     this.jwt = jwt;
     this.cookies = cookies;
     this.props = props;
+    this.requests = requests;
   }
 
-  @PostMapping("/session")
-  StatusResponse open(@Valid @RequestBody TokenRequest body) {
-    return new StatusResponse(service.open(body.token()));
+  ServerResponse open(ServerRequest request) throws Exception {
+    TokenRequest body = requests.body(request, TokenRequest.class);
+    return ServerResponse.ok().body(new StatusResponse(service.open(body.token())));
   }
 
-  @PostMapping("/otp")
-  @ResponseStatus(HttpStatus.ACCEPTED)
-  void requestOtp(@Valid @RequestBody TokenRequest body) {
+  ServerResponse requestOtp(ServerRequest request) throws Exception {
+    TokenRequest body = requests.body(request, TokenRequest.class);
     service.requestOtp(body.token());
+    return ServerResponse.accepted().build();
   }
 
   /** Exchanges the link token + OTP for a session cookie scoped to this one inspection. */
-  @PostMapping("/otp/verify")
-  ResponseEntity<Void> verifyOtp(@Valid @RequestBody VerifyOtpRequest body) {
+  ServerResponse verifyOtp(ServerRequest request) throws Exception {
+    VerifyOtpRequest body = requests.body(request, VerifyOtpRequest.class);
     UUID inspectionId = service.verifyOtp(body.token(), body.code());
     String session =
         jwt.issue(
@@ -74,7 +71,7 @@ class CustomerInspectionController {
             inspectionId.toString(),
             Map.of(),
             props.customerSessionTtl());
-    return ResponseEntity.noContent()
+    return ServerResponse.noContent()
         .header(
             SessionCookies.headerName(),
             cookies.set(
@@ -86,21 +83,20 @@ class CustomerInspectionController {
   }
 
   /** Ends the customer session: the link and session are both dead after submission. */
-  @PostMapping("/submit")
-  ResponseEntity<StatusResponse> submit(
-      @AuthenticationPrincipal CustomerPrincipal customer,
-      @RequestHeader(value = "Idempotency-Key", required = false) UUID idempotencyKey,
-      @Valid @RequestBody SubmissionRequest body) {
-    service.submit(customer.inspectionId(), idempotencyKey, body);
-    return ResponseEntity.ok()
+  ServerResponse submit(ServerRequest request) throws Exception {
+    UUID idempotencyKey = requests.idempotencyKey(request);
+    SubmissionRequest body = requests.body(request, SubmissionRequest.class);
+    service.submit(
+        requests.principal(CustomerPrincipal.class).inspectionId(), idempotencyKey, body);
+    return ServerResponse.ok()
         .header(
             SessionCookies.headerName(),
             cookies.clear(SessionCookies.CUSTOMER, SessionCookies.CUSTOMER_PATH))
         .body(new StatusResponse(InspectionStatus.SUBMITTED));
   }
 
-  @GetMapping("/inspection")
-  StatusResponse current(@AuthenticationPrincipal CustomerPrincipal customer) {
-    return new StatusResponse(service.get(customer.inspectionId()).getStatus());
+  ServerResponse current(ServerRequest request) {
+    UUID inspectionId = requests.principal(CustomerPrincipal.class).inspectionId();
+    return ServerResponse.ok().body(new StatusResponse(service.get(inspectionId).getStatus()));
   }
 }
