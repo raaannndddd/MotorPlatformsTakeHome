@@ -4,9 +4,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.motorplatforms.auth.SessionCookies;
-import com.motorplatforms.users.Role;
-import com.motorplatforms.users.UserService;
+import com.motorplatforms.security.SessionCookies;
+import com.motorplatforms.service.UserService;
 import jakarta.servlet.http.Cookie;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -54,14 +53,14 @@ public abstract class IntegrationTest {
     sms.clear();
   }
 
-  protected Cookie loginAs(Role role) throws Exception {
-    String email = role.name().toLowerCase() + "@example.com";
-    userService.create(email, PASSWORD, role);
+  protected Cookie loginAsAdmin() throws Exception {
+    String email = "admin@example.com";
+    userService.create(email, PASSWORD);
     var result =
         mvc.perform(jsonPost("/api/auth/login", Map.of("email", email, "password", PASSWORD)))
             .andExpect(status().isOk())
             .andReturn();
-    return result.getResponse().getCookie(SessionCookies.STAFF);
+    return result.getResponse().getCookie(SessionCookies.ADMIN);
   }
 
   protected String createClient(Cookie session) throws Exception {

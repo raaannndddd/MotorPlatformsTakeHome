@@ -1,4 +1,4 @@
-package com.motorplatforms.media;
+package com.motorplatforms.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -9,7 +9,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.motorplatforms.inspections.InspectionTestSupport;
 import jakarta.servlet.http.Cookie;
 import java.net.URI;
 import java.util.Map;
@@ -49,7 +48,7 @@ class MediaUploadTest extends InspectionTestSupport {
 
     String url =
         json.readTree(
-                mvc.perform(get("/api/inspections/" + inspectionId + "/media").cookie(staff))
+                mvc.perform(get("/api/inspections/" + inspectionId + "/media").cookie(admin))
                     .andExpect(status().isOk())
                     .andReturn()
                     .getResponse()

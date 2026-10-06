@@ -1,4 +1,4 @@
-package com.motorplatforms.inspections;
+package com.motorplatforms.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -11,7 +11,7 @@ import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.ResultActions;
 
-class StaffResponseTest extends InspectionTestSupport {
+class InspectionResponseTest extends InspectionTestSupport {
 
   private static final String RESPONSE = "Thanks. We can fix the scratch for $150.";
 
@@ -78,7 +78,7 @@ class StaffResponseTest extends InspectionTestSupport {
     return mvc.perform(
         jsonPost("/api/inspections/" + id + "/response", Map.of("response", text))
             .header("Idempotency-Key", key.toString())
-            .cookie(staff));
+            .cookie(admin));
   }
 
   /** Keeps the expected text next to the test without reaching into production constants. */

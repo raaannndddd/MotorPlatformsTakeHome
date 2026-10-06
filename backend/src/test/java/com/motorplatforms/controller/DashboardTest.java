@@ -1,4 +1,4 @@
-package com.motorplatforms.inspections;
+package com.motorplatforms.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
@@ -20,8 +20,8 @@ class DashboardTest extends InspectionTestSupport {
   @Test
   void listsInspectionsWithTheirClientInOneQuery() throws Exception {
     for (int i = 0; i < 5; i++) {
-      String otherClient = createClient(staff); // a distinct client per row exposes N+1
-      mvc.perform(jsonPost("/api/inspections", Map.of("clientId", otherClient)).cookie(staff));
+      String otherClient = createClient(admin); // a distinct client per row exposes N+1
+      mvc.perform(jsonPost("/api/inspections", Map.of("clientId", otherClient)).cookie(admin));
     }
     // Let the background SMS jobs finish so their queries are not counted.
     await()
@@ -30,7 +30,7 @@ class DashboardTest extends InspectionTestSupport {
     Statistics stats = emf.unwrap(SessionFactory.class).getStatistics();
     stats.clear();
 
-    mvc.perform(get("/api/inspections").cookie(staff))
+    mvc.perform(get("/api/inspections").cookie(admin))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(5))
         .andExpect(jsonPath("$[0].clientName").value("Jane Citizen"));
@@ -43,17 +43,17 @@ class DashboardTest extends InspectionTestSupport {
     submittedInspection();
     sendLink();
 
-    mvc.perform(get("/api/inspections?status=SUBMITTED").cookie(staff))
+    mvc.perform(get("/api/inspections?status=SUBMITTED").cookie(admin))
         .andExpect(jsonPath("$.length()").value(1))
         .andExpect(jsonPath("$[0].status").value("SUBMITTED"));
-    mvc.perform(get("/api/inspections").cookie(staff)).andExpect(jsonPath("$.length()").value(2));
+    mvc.perform(get("/api/inspections").cookie(admin)).andExpect(jsonPath("$.length()").value(2));
   }
 
   @Test
   void showsTheSubmittedForm() throws Exception {
     String id = submittedInspection();
 
-    mvc.perform(get("/api/inspections/" + id).cookie(staff))
+    mvc.perform(get("/api/inspections/" + id).cookie(admin))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.inspection.status").value("SUBMITTED"))
         .andExpect(jsonPath("$.mileage").value(84_000))

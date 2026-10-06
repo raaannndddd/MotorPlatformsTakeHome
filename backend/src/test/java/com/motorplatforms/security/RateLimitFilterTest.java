@@ -1,4 +1,4 @@
-package com.motorplatforms.common;
+package com.motorplatforms.security;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -21,7 +21,7 @@ class RateLimitFilterTest {
   }
 
   @Test
-  void ignoresAuthenticatedStaffEndpoints() throws Exception {
+  void ignoresAuthenticatedAdminEndpoints() throws Exception {
     for (int i = 0; i < 5; i++) {
       assertThat(call("/api/clients", "1.1.1.1")).isEqualTo(200);
     }
